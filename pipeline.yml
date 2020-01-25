@@ -1,0 +1,49 @@
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: teliaoss/github-pr-resource
+
+resources:
+  - name: pull-request
+    type: pull-request
+    icon: source-branch
+    source:
+      repository: spire-allyjweir/lfs-example
+
+jobs:
+- name: check-lfs-capabilities
+  plan:
+  - get: pull-request
+    trigger: true
+
+  - task: count-sh-files
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      inputs:
+      - name: pull-request
+      run:
+        path: bash
+        dir: pull-request
+        args:
+        - count-sh.sh
+
+  # I expect this to fail because it doesn't have git lfs support
+  - task: count-jpg-files
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: alpine
+      inputs:
+      - name: pull-request
+      run:
+        path: bash
+        dir: pull-request
+        args:
+        - count-jpg.sh
